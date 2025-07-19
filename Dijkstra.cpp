@@ -23,9 +23,10 @@
 #include <iostream>
 #include <vector>
 #include <queue>
-#include <limits>
+#include <climits>
 #include <utility> // for pair
 #include <stack>   // for reconstructing the path
+#include <algorithm>
 
 using namespace std;
 
@@ -48,20 +49,68 @@ public:
 
     // TODO: Implement Dijkstra's algorithm
     void shortestPath(int src, int dest) {
-        // Your implementation goes here
-        
-        // 1. Create a priority queue for vertices being processed
-        // 2. Create arrays for distances and for tracking the path
-        // 3. Initialize all distances as INFINITE and src distance as 0
-        // 4. Process vertices in order of their distance from src
-        // 5. Reconstruct and print the shortest path from src to dest
+
+        vector<int> dist(V, INT_MAX);
+        vector<int> prev(V, -1);
+        priority_queue<pair<int,int>, vector<pair<int,int>>, greater<>> pq;
+
+        dist[src] = 0;
+        pq.push({0, src}); // {distance, vertices}
+
+        while (!pq.empty()){
+            int u = pq.top().second;
+            pq.pop();
+
+            for (auto [v,w] : adj[u]){
+                if (dist[u] + w < dist[v]){
+                    dist[v] = dist[u] + w;
+                    prev[v] = u; //紀錄點
+                    pq.push({dist[v], v});
+                }
+            }
+        }
+
+        if (dist[dest] == INT_MAX) {
+            cout << "No path.\n";
+            return;
+        }
+
+        // 印出最短時間
+        cout << "Shortest travel time: " << dist[dest] << " hours\n";
+
+        // 回溯路徑
+        vector<int> path;
+        for (int at = dest; at != -1; at = prev[at])
+            path.push_back(at);
+        reverse(path.begin(), path.end());
+
+        cout << "Path: ";
+        for (size_t i = 0; i < path.size(); ++i) {
+            cout << path[i];
+            if (i != path.size() - 1) cout << " -> ";
+        }
+        cout << endl;
     }
 };
+/*
+void define_the_map(Graph& g){
+    
+    cout<<"Enter the edges: (u, v, w)";
 
+}
+    */
 int main() {
     // Create graph with 6 cities (labeled 0 to 5)
-    Graph g(6);
+    /*
+    int v;
+    cout<<"Please Enter the number of city.";
+    cin>>v;
+    Graph g(v);
     
+    define_the_map(g); */
+
+    Graph g(6);
+
     // Add roads with travel times (directed edges with weights)
     g.addEdge(0, 1, 2);  // From city 0 to city 1, travel time: 2 hours
     g.addEdge(0, 2, 4);  // From city 0 to city 2, travel time: 4 hours
