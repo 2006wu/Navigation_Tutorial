@@ -28,6 +28,7 @@
 #include <limits>
 #include <utility> // for pair
 #include <stack>   // for reconstructing the path
+#include <climits>
 
 using namespace std;
 
@@ -58,13 +59,66 @@ public:
     // TODO: Implement A* algorithm
     void aStarSearch(int src, int dest) {
         // Your implementation goes here
-        
         // 1. Create a priority queue for vertices being processed
         // 2. Create arrays for g_score (actual distance from start)
         //    and f_score (g_score + heuristic)
         // 3. Initialize all g_scores as INFINITE and src g_score as 0
         // 4. Process vertices in order of their f_score (not just distance)
         // 5. Reconstruct and print the shortest path from src to dest
+
+        using pii = pair<int, int>; // typedef pair<int, int> pii; 把最小的城市放在前面 <fScore, city>
+        priority_queue<pii, vector<pii>, greater<pii>> Set;
+
+        vector<int> gScore(V, INT_MAX);
+        vector<int> fScore(V, INT_MAX);
+        vector<int> From(V, -1); // notes every vertices where are you from
+
+        gScore[src] = 0;
+        fScore[src] = heuristic[src];
+
+        Set.push({fScore[src], src});
+
+        while(!Set.empty()){
+            int current = Set.top().second;
+            Set.pop();
+
+            if (current == dest){ // find destination, backtrack the path
+                stack<int> path;
+                int temp = dest;
+                while (temp != -1){
+                    path.push(temp);
+                    temp = From[temp];
+                }
+
+                cout << "Shortest travel time " << gScore[dest] << " hours." << endl;
+                cout << "Path: ";
+                while (!path.empty()){
+                    cout << path.top();
+                    path.pop();
+                    if (!path.empty()){
+                        cout << " -> ";
+                    }
+                }
+                cout << endl;
+                return;
+            }
+
+            for (auto neighborPair : adj[current]){
+                int neighbor = neighborPair.first;
+                int weight = neighborPair.second;
+
+                int temp_gScore = gScore[current] + weight;
+
+                if (temp_gScore < gScore[neighbor]){
+                    From[neighbor] = current;
+                    gScore[neighbor] = temp_gScore;
+                    fScore[neighbor] = temp_gScore + heuristic[neighbor];
+                    Set.push({fScore[neighbor], neighbor});
+                }
+            }
+        }
+
+        cout << "No path exists from " << src << " to " << dest << "." << endl;
     }
 };
 
